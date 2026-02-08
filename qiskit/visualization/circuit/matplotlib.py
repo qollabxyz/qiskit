@@ -17,9 +17,12 @@
 import collections
 import itertools
 import re
+import tempfile
 from io import StringIO
 
 import numpy as np
+
+from js import sendFile
 
 from qiskit.circuit import (
     QuantumCircuit,
@@ -393,13 +396,33 @@ class MatplotlibDrawer:
             glob_data,
             verbose,
         )
-        if filename:
+
+        # Save as SVG to display
+        with tempfile.NamedTemporaryFile(delete_on_close=False) as svgFile:
             mpl_figure.savefig(
-                filename,
+                svgFile.name,
+                format="svg",
                 dpi=self._style["dpi"],
                 bbox_inches="tight",
                 facecolor=mpl_figure.get_facecolor(),
             )
+            with open(svgFile.name, mode='rb') as f:
+                svgData = f.read()
+
+        if filename:
+            with tempfile.NamedTemporaryFile(delete_on_close=False) as mplFigFile:
+                mpl_figure.savefig(
+                    mplFigFile.name,
+                    dpi=self._style["dpi"],
+                    bbox_inches="tight",
+                    facecolor=mpl_figure.get_facecolor(),
+                )
+                with open(mplFigFile.name, mode='rb') as f:
+                    mplFigData = f.read()
+            sendFile(filename, "image/svg+xml", svgData, 'application/octet-stream', mplFigData)
+        else:
+            sendFile("circuit.svg", "image/svg+xml", svgData)
+
         if not is_user_ax:
             matplotlib_close_if_inline(mpl_figure)
             return mpl_figure
