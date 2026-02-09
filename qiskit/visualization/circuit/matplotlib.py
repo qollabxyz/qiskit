@@ -18,6 +18,7 @@ import collections
 import itertools
 import re
 import tempfile
+import os
 from io import StringIO
 
 import numpy as np
@@ -412,7 +413,45 @@ class MatplotlibDrawer:
         if filename is None:
             filename = "circuit.svg"
 
-        sendFile(filename, "image/svg+xml", svgData)
+        fnameRaw, fnameExt = os.path.splitext(filename)
+        if fnameExt == ".svg":
+            sendFile(filename, "image/svg+xml", svgData)
+        else:
+            # Guess the content type / format from an extension
+            outDataContentType = None
+            outDataFormat = None
+            # Those are types MPL supports
+            match fnameExt:
+                case "":
+                    outDataContentType = "image/png"
+                    outDataFormat = "png"
+                    filename += ".png"
+                case ".png":
+                    outDataContentType = "image/png"
+                    outDataFormat = "png"
+                case ".pdf":
+                    outDataContentType = "application/pdf"
+                    outDataFormat = "pdf"
+                case ".ps":
+                    outDataContentType = "application/postscript"
+                    outDataFormat = "ps"
+            if outDataContentType is None:
+                # If the format is not supported by MPL, don't ask it to produce empty output
+                sendFile(fnameRaw + ".svg", "image/svg+xml", svgData)
+            else:
+                # Some valid non-SVG output format got requested; as temporary file name
+                # provides no MPL-recognizable extension, pass format explicitly
+                with tempfile.NamedTemporaryFile(delete_on_close=False) as outFile:
+                    mpl_figure.savefig(
+                        outFile.name,
+                        format=outDataFormat,
+                        dpi=self._style["dpi"],
+                        bbox_inches="tight",
+                        facecolor=mpl_figure.get_facecolor(),
+                    )
+                    with open(outFile.name, mode="rb") as f:
+                        outData = f.read()
+                sendFile(filename, "image/svg+xml", svgData, outDataContentType, outData)
 
         if not is_user_ax:
             matplotlib_close_if_inline(mpl_figure)
