@@ -32,7 +32,7 @@ from qiskit.circuit.tools.pi_check import pi_check
 from .array import _num_to_latex, array_to_latex
 from .utils import matplotlib_close_if_inline
 from .exceptions import VisualizationError
-
+from .mpl_shim import MPLShim
 
 @_optionals.HAS_MATPLOTLIB.require_in_call
 def plot_state_hinton(state, title="", figsize=None, ax_real=None, ax_imag=None, *, filename=None):
@@ -179,10 +179,11 @@ def plot_state_hinton(state, title="", figsize=None, ax_real=None, ax_imag=None,
         fig.suptitle(title, fontsize=16)
     if ax_real is None and ax_imag is None:
         matplotlib_close_if_inline(fig)
+    fig_shim = MPLShim(fig)
     if filename is None:
-        return fig
+        return fig_shim
     else:
-        return fig.savefig(filename)
+        return fig_shim.savefig(filename)
 
 
 @_optionals.HAS_MATPLOTLIB.require_in_call
@@ -252,7 +253,7 @@ def plot_bloch_vector(
         fig = B.fig
         fig.set_size_inches(figsize[0], figsize[1])
         matplotlib_close_if_inline(fig)
-        return fig
+        return MPLShim(fig)
     return None
 
 
@@ -364,14 +365,15 @@ def plot_bloch_multivector(
         )
     fig.suptitle(title, fontsize=title_font_size, y=0.98)
     matplotlib_close_if_inline(fig)
+    fig_shim = MPLShim(fig)
     if filename is None:
         try:
             fig.tight_layout()
         except AttributeError:
             pass
-        return fig
+        return fig_shim
     else:
-        return fig.savefig(filename)
+        return fig_shim.savefig(filename)
 
 
 @_optionals.HAS_MATPLOTLIB.require_in_call
@@ -623,10 +625,11 @@ def plot_state_city(
     fig.subplots_adjust(top=0.9, bottom=0, left=0, right=1, hspace=0, wspace=0)
     if ax_real is None and ax_imag is None:
         matplotlib_close_if_inline(fig)
+    fig_shim = MPLShim(fig)
     if filename is None:
-        return fig
+        return fig_shim
     else:
-        return fig.savefig(filename)
+        return fig_shim.savefig(filename)
 
 
 @_optionals.HAS_MATPLOTLIB.require_in_call
@@ -742,14 +745,15 @@ def plot_state_paulivec(state, title="", figsize=None, color=None, ax=None, *, f
     ax.set_title(title, fontsize=16)
     if return_fig:
         matplotlib_close_if_inline(fig)
+    fig_shim = MPLShim(fig)
     if filename is None:
         try:
             fig.tight_layout()
         except AttributeError:
             pass
-        return fig
+        return fig_shim
     else:
-        return fig.savefig(filename)
+        return fig_shim.savefig(filename)
 
 
 def n_choose_k(n, k):
@@ -1099,10 +1103,11 @@ def plot_state_qsphere(
 
     if return_fig:
         matplotlib_close_if_inline(fig)
+    fig_shim = MPLShim(fig)
     if filename is None:
-        return fig
+        return fig_shim
     else:
-        return fig.savefig(filename)
+        return fig_shim.savefig(filename)
 
 
 @_optionals.HAS_MATPLOTLIB.require_in_call
