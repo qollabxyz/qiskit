@@ -17,13 +17,11 @@
 import collections
 import itertools
 import re
-import tempfile
-import os
 from io import StringIO
 
 import numpy as np
 
-from js import sendFile
+from ..mpl_shim import MPLShim
 
 from qiskit.circuit import (
     QuantumCircuit,
@@ -398,64 +396,12 @@ class MatplotlibDrawer:
             verbose,
         )
 
-        # Save to SVG
-        with tempfile.NamedTemporaryFile(delete_on_close=False) as svgFile:
-            mpl_figure.savefig(
-                svgFile.name,
-                format="svg",
-                dpi=self._style["dpi"],
-                bbox_inches="tight",
-                facecolor=mpl_figure.get_facecolor(),
-            )
-            with open(svgFile.name, mode="rb") as f:
-                svgData = f.read()
-
-        if filename is None:
-            filename = "circuit.svg"
-
-        fnameRaw, fnameExt = os.path.splitext(filename)
-        if fnameExt == ".svg":
-            sendFile(filename, "image/svg+xml", svgData)
-        else:
-            # Guess the content type / format from an extension
-            outDataContentType = None
-            outDataFormat = None
-            # Those are types MPL supports
-            match fnameExt:
-                case "":
-                    outDataContentType = "image/png"
-                    outDataFormat = "png"
-                    filename += ".png"
-                case ".png":
-                    outDataContentType = "image/png"
-                    outDataFormat = "png"
-                case ".pdf":
-                    outDataContentType = "application/pdf"
-                    outDataFormat = "pdf"
-                case ".ps":
-                    outDataContentType = "application/postscript"
-                    outDataFormat = "ps"
-            if outDataContentType is None:
-                # If the format is not supported by MPL, don't ask it to produce empty output
-                sendFile(fnameRaw + ".svg", "image/svg+xml", svgData)
-            else:
-                # Some valid non-SVG output format got requested; as temporary file name
-                # provides no MPL-recognizable extension, pass format explicitly
-                with tempfile.NamedTemporaryFile(delete_on_close=False) as outFile:
-                    mpl_figure.savefig(
-                        outFile.name,
-                        format=outDataFormat,
-                        dpi=self._style["dpi"],
-                        bbox_inches="tight",
-                        facecolor=mpl_figure.get_facecolor(),
-                    )
-                    with open(outFile.name, mode="rb") as f:
-                        outData = f.read()
-                sendFile(filename, "image/svg+xml", svgData, outDataContentType, outData)
+        figure_shim = MPLShim(mpl_figure)
+        figure_shim.savefig(filename, dpi=self._style["dpi"], bbox_inches="tight", facecolor=mpl_figure.get_facecolor())
 
         if not is_user_ax:
             matplotlib_close_if_inline(mpl_figure)
-            return mpl_figure
+            return figure_shim
 
     def _get_layer_widths(self, node_data, wire_map, outer_circuit, glob_data):
         """Compute the layer_widths for the layers"""

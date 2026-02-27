@@ -27,6 +27,7 @@ from qiskit.visualization.timeline import core, types, drawings
 from qiskit.visualization.timeline.plotters.base_plotter import BasePlotter
 from qiskit.visualization.utils import matplotlib_close_if_inline
 
+from ...mpl_shim import MPLShim
 
 class MplPlotter(BasePlotter):
     """Matplotlib API for pulse drawer.
@@ -174,7 +175,7 @@ class MplPlotter(BasePlotter):
         Args:
             filename: File path to output image data.
         """
-        plt.savefig(filename, bbox_inches="tight", dpi=self.canvas.formatter["general.dpi"])
+        MPLShim(self.figure).savefig(filename, bbox_inches="tight", dpi=self.canvas.formatter["general.dpi"])
 
     def get_image(self, interactive: bool = False) -> matplotlib.pyplot.Figure:
         """Get image data to return.
@@ -187,9 +188,11 @@ class MplPlotter(BasePlotter):
         matplotlib_close_if_inline(self.figure)
 
         if self.figure and interactive:
-            self.figure.show()
+            MPLShim(self.figure).show()
         try:
             self.figure.tight_layout()
         except AttributeError:
             pass
+        if self.figure:
+            return MPLShim(self.figure)
         return self.figure

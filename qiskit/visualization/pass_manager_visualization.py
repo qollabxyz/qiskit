@@ -285,28 +285,30 @@ def make_output(graph, raw, filename):
     """Produce output for pass_manager."""
     if raw:
         if filename:
-            graph.write(filename, format="raw")
+            with tempfile.NamedTemporaryFile(delete_on_close=False) as dotFile:
+                graph.write(dotFile.name, format="raw")
+                with open(dotFile.name, mode="rb") as f:
+                    sendFile(filename, "text/vnd.graphviz", f.read())
             return None
         else:
             raise VisualizationError("if format=raw, then a filename is required.")
 
     if not _optionals.HAS_PIL and filename:
-        # pylint says this isn't a method - it is
-        graph.write_png(filename)
+        with tempfile.NamedTemporaryFile(delete_on_close=False) as pngFile:
+            # pylint says this isn't a method - it is
+            graph.write_png(pngFile.name)
+            with open(pngFile.name, mode="rb") as f:
+                sendFile(filename, "image/png", f.read())
         return None
 
     _optionals.HAS_PIL.require_now("pass manager drawer")
 
-    with tempfile.TemporaryDirectory() as tmpdirname:
-        from PIL import Image
-
-        tmppath = os.path.join(tmpdirname, "pass_manager.png")
-
+    with tempfile.NamedTemporaryFile(delete_on_close=False) as pngFile:
         # pylint says this isn't a method - it is
-        graph.write_png(tmppath)
-
-        image = Image.open(tmppath)
-        os.remove(tmppath)
+        graph.write_png(pngFile.name)
         if filename:
-            image.save(filename, "PNG")
-        return image
+            with open(pngFile.name, mode="rb") as f:
+                sendFile(filename, "image/png", f.read())
+
+        from PIL import Image
+        return Image.open(pngFile.name)

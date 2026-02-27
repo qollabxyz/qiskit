@@ -23,6 +23,7 @@ from qiskit.exceptions import QiskitError
 from qiskit.utils import optionals as _optionals
 from qiskit.transpiler.coupling import CouplingMap
 from .exceptions import VisualizationError
+from .mpl_shim import MPLShim
 
 
 @_optionals.HAS_MATPLOTLIB.require_in_call
@@ -1110,6 +1111,7 @@ def plot_coupling_map(
         filename=filename,
     )
 
+    # TODO: it saves to nowhere, capture it and sendFile()
     if filename:
         return None
 
@@ -1123,7 +1125,7 @@ def plot_coupling_map(
 
     if not input_axes:
         matplotlib_close_if_inline(fig)
-        return fig
+        return MPLShim(fig)
 
 
 def plot_circuit_layout(circuit, backend, view="virtual", qubit_coordinates=None):
@@ -1421,4 +1423,4 @@ def plot_error_map(backend, figsize=(15, 12), show_title=True, qubit_coordinates
     if show_title:
         fig.suptitle(f"{backend_name} Error Map", fontsize=24, y=0.9)
     matplotlib_close_if_inline(fig)
-    return fig
+    return MPLShim(fig)
