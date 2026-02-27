@@ -23,6 +23,7 @@ from qiskit.utils import optionals as _optionals
 from qiskit.result import QuasiDistribution, ProbDistribution
 from .exceptions import VisualizationError
 from .utils import matplotlib_close_if_inline
+from .mpl_shim import MPLShim
 
 
 def hamming_distance(str1, str2):
@@ -407,14 +408,15 @@ def _plotting_core(
         )
     if fig:
         matplotlib_close_if_inline(fig)
+    fig_shim = MPLShim(fig)
     if filename is None:
         try:
             fig.tight_layout()
         except AttributeError:
             pass
-        return fig
+        return fig_shim
     else:
-        return fig.savefig(filename)
+        return fig_shim.savefig(filename)
 
 
 def _keep_largest_items(execution, number_to_keep):
