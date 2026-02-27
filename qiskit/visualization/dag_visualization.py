@@ -383,6 +383,7 @@ def dag_drawer(
             return None
 
     else:
+        # TODO: outputs to nowhere
         return graphviz_draw(
             dag._multi_graph,
             node_attr_func,
