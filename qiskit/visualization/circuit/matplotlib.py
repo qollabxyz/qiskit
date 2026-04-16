@@ -395,7 +395,8 @@ class MatplotlibDrawer:
         )
 
         figure_shim = MPLShim(mpl_figure)
-        figure_shim.savefig(filename, dpi=self._style["dpi"], bbox_inches="tight", facecolor=mpl_figure.get_facecolor())
+        if filename:
+            figure_shim.savefig(filename, dpi=self._style["dpi"], bbox_inches="tight", facecolor=mpl_figure.get_facecolor())
 
         if not is_user_ax:
             matplotlib_close_if_inline(mpl_figure)
