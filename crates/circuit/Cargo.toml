@@ -30,11 +30,16 @@ uuid.workspace = true
 nom.workspace = true
 nom-unicode.workspace = true
 nom-language.workspace = true
-crossterm = "0.29.0"
 unicode-width = "0.2"
 unicode-segmentation = "1.13"
 lexical-core = "1.0.6"
 lexical-write-float = "1.0.6"
+
+[dependencies.crossterm]
+version = "0.29.0"
+# crossterm is only used to get the terminal size, while default features include events support, pulling in mio that doesn't work w/ WASM32 target
+default-features = false
+features = []
 
 [dependencies.pyo3]
 workspace = true
