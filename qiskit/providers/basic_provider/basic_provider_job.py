@@ -63,3 +63,9 @@ class BasicProviderJob(JobV1):
     def backend(self):
         """Return the instance of the backend used for this job."""
         return self._backend
+
+    def get_counts(self):
+        # IonQ exposes get_counts() on its Job implementation, advertising it in examples;
+        # this shortcut does not exist in generic Qiskit and .result().get_counts() has
+        # to be used instead. Provide a clear Exception for that
+        raise Exception("Job.get_counts() is IonQ-only shortcut, it's not available in generic Qiskit; use Job.result().get_counts() instead")
