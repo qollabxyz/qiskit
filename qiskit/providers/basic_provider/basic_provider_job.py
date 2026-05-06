@@ -68,4 +68,8 @@ class BasicProviderJob(JobV1):
         # IonQ exposes get_counts() on its Job implementation, advertising it in examples;
         # this shortcut does not exist in generic Qiskit and .result().get_counts() has
         # to be used instead. Provide a clear Exception for that
-        raise Exception("Job.get_counts() is IonQ-only shortcut, it's not available in generic Qiskit; use Job.result().get_counts() instead")
+        raise Exception(
+            "Job.get_counts() is IonQ-only shortcut, it's not available in generic Qiskit; "
+            "to run this code on non-IonQ backends its has to be updated to use "
+            "Job.result().get_counts() instead"
+        )
