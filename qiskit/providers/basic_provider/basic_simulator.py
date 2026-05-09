@@ -64,6 +64,8 @@ from .basic_provider_tools import (
 from .basic_provider_tools import einsum_vecmul_index
 from .exceptions import BasicProviderError
 
+from js import reportCounts
+
 logger = logging.getLogger(__name__)
 
 
@@ -578,7 +580,9 @@ class BasicSimulator(BackendV2):
                 memory.append(hex(int(outcome, 2)))
 
         # Build result data
-        data = {"counts": dict(Counter(memory))}
+        counts = dict(Counter(memory))
+        data = {"counts": counts}
+        reportCounts(counts)
         if self._memory:
             data["memory"] = memory
 
@@ -761,7 +765,9 @@ class BasicSimulator(BackendV2):
                     memory.append(hex(int(outcome, 2)))
 
         # Add counts to result data
-        data = {"counts": dict(Counter(memory))}
+        counts = dict(Counter(memory))
+        data = {"counts": counts}
+        reportCounts(counts)
         # Optionally, add memory list to result data
         if self._memory:
             data["memory"] = memory
