@@ -64,7 +64,7 @@ from .basic_provider_tools import (
 from .basic_provider_tools import einsum_vecmul_index
 from .exceptions import BasicProviderError
 
-from js import reportCounts
+from js import reportCounts, reportNumQubits
 
 logger = logging.getLogger(__name__)
 
@@ -650,6 +650,7 @@ class BasicSimulator(BackendV2):
 
         # Set these BEFORE the Clifford check
         self._number_of_qubits = circuit.num_qubits
+        reportNumQubits(circuit.num_qubits)
         self._number_of_cmembits = circuit.num_clbits
 
         # Check if circuit is Clifford and use optimized simulation
