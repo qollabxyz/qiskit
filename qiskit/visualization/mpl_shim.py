@@ -42,7 +42,6 @@ class MPLShim:
         svgData = self.toSVG(
             transparent=transparent,
             dpi=dpi,
-            format="svg",
             metadata=metadata,
             bbox_inches=bbox_inches,
             pad_inches=pad_inches,
@@ -85,7 +84,7 @@ class MPLShim:
                     data,
                     transparent=transparent,
                     dpi=dpi,
-                    format="svg",
+                    format=outDataFormat,
                     metadata=metadata,
                     bbox_inches=bbox_inches,
                     pad_inches=pad_inches,
