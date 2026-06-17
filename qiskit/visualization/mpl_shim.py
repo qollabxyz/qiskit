@@ -1,5 +1,6 @@
 import os
 import tempfile
+from io import BytesIO
 
 from js import sendFile
 
@@ -11,26 +12,45 @@ class MPLShim:
     def show(self, warn=True):
         self.savefig("figure.svg")
 
+    def toSVG(self, *, transparent=None, dpi='figure',
+        metadata=None, bbox_inches=None, pad_inches=0.1,
+        facecolor='auto', edgecolor='auto', backend=None,
+        **kwargs
+    ):
+        data = BytesIO()
+        self.fig.savefig(
+            data,
+            transparent=transparent,
+            dpi=dpi,
+            format="svg",
+            metadata=metadata,
+            bbox_inches=bbox_inches,
+            pad_inches=pad_inches,
+            facecolor=facecolor,
+            edgecolor=edgecolor,
+            backend=backend,
+            **kwargs
+        )
+        return data.getvalue()
+
     def savefig(self, fname, *, transparent=None, dpi='figure', format=None,
         metadata=None, bbox_inches=None, pad_inches=0.1,
         facecolor='auto', edgecolor='auto', backend=None,
         **kwargs
     ):
         # Save to SVG
-        with tempfile.NamedTemporaryFile(delete_on_close=False) as svgFile:
-            self.fig.savefig(
-                svgFile.name,
-                transparent=transparent,
-                dpi=dpi,
-                format="svg",
-                metadata=metadata,
-                bbox_inches=bbox_inches,
-                pad_inches=pad_inches,
-                facecolor=facecolor,
-                edgecolor=edgecolor,
-            )
-            with open(svgFile.name, mode="rb") as f:
-                svgData = f.read()
+        svgData = self.toSVG(
+            transparent=transparent,
+            dpi=dpi,
+            format="svg",
+            metadata=metadata,
+            bbox_inches=bbox_inches,
+            pad_inches=pad_inches,
+            facecolor=facecolor,
+            edgecolor=edgecolor,
+            backend=backend,
+            **kwargs
+        )
 
         fnameRaw, fnameExt = os.path.splitext(fname)
         if fnameExt == ".svg":
@@ -60,18 +80,18 @@ class MPLShim:
             else:
                 # Some valid non-SVG output format got requested; as temporary file name
                 # provides no MPL-recognizable extension, pass format explicitly
-                with tempfile.NamedTemporaryFile(delete_on_close=False) as outFile:
-                    self.fig.savefig(
-                        outFile.name,
-                        transparent=transparent,
-                        dpi=dpi,
-                        format=outDataFormat,
-                        metadata=metadata,
-                        bbox_inches=bbox_inches,
-                        pad_inches=pad_inches,
-                        facecolor=facecolor,
-                        edgecolor=edgecolor,
-                    )
-                    with open(outFile.name, mode="rb") as f:
-                        outData = f.read()
-                sendFile(fname, "image/svg+xml", svgData, outDataContentType, outData)
+                outData = BytesIO()
+                self.fig.savefig(
+                    data,
+                    transparent=transparent,
+                    dpi=dpi,
+                    format="svg",
+                    metadata=metadata,
+                    bbox_inches=bbox_inches,
+                    pad_inches=pad_inches,
+                    facecolor=facecolor,
+                    edgecolor=edgecolor,
+                    backend=backend,
+                    **kwargs
+                )
+                sendFile(fname, "image/svg+xml", svgData, outDataContentType, outData.getvalue())
