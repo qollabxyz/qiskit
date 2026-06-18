@@ -81,7 +81,7 @@ class MPLShim:
                 # provides no MPL-recognizable extension, pass format explicitly
                 outData = BytesIO()
                 self.fig.savefig(
-                    data,
+                    outData,
                     transparent=transparent,
                     dpi=dpi,
                     format=outDataFormat,
