@@ -511,7 +511,7 @@ def _latex_circuit_drawer(
     wire_order=None,
     barrier_label_len=16,
 ):
-    # WIP: use JS-side renderer
+    # TODO: use JS-side renderer (requires support of Qcircuit LaTeX package)
     if filename is None:
         filename = "circuit.tex"
     return _generate_latex_source(
