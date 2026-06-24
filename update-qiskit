@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+# Replay the Qollab patches (the commits on top of upstream Qiskit) onto an
+# upstream Qiskit version tag, so this fork can track a new release.
+#
+#   ./update-qiskit 2.5.0rc2
+#
+# Stops on conflict for manual resolution (run `git rebase --continue` after
+# fixing). Never pushes — after a successful rebase AND a build-verify, force-push
+# `main` yourself:  git push --force-with-lease origin HEAD:main
+set -euo pipefail
+
+[ $# -eq 1 ] || { echo "usage: $0 <qiskit-version-tag>   e.g. $0 2.5.0rc2" >&2; exit 2; }
+VERSION="$1"
+
+git remote get-url upstream >/dev/null 2>&1 || \
+  git remote add upstream https://github.com/Qiskit/qiskit.git
+
+# Fetch only the requested tag, force-updating just that ref. Avoids `--tags`, which
+# exits non-zero when any pre-existing local tag "would clobber" — that would kill the
+# script under `set -e`. A missing tag makes this fetch fail, which we report cleanly.
+if ! git fetch --force upstream "refs/tags/${VERSION}:refs/tags/${VERSION}" 2>/dev/null; then
+  echo "error: tag '${VERSION}' not found in upstream Qiskit (https://github.com/Qiskit/qiskit)" >&2
+  exit 1
+fi
+
+BASE="$(git merge-base HEAD "${VERSION}")"
+echo "Replaying $(git rev-parse --short HEAD) patches (since ${BASE:0:10}) onto ${VERSION}…"
+git rebase --onto "${VERSION}" "${BASE}" HEAD
+
+echo
+echo "Rebased onto ${VERSION}. Next: build-verify the wheel, then land with:"
+echo "  git push --force-with-lease origin HEAD:main"
