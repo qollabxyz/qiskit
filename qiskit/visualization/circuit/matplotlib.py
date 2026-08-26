@@ -20,8 +20,6 @@ from io import StringIO
 
 import numpy as np
 
-from ..mpl_shim import MPLShim
-
 from qiskit.circuit import (
     QuantumCircuit,
     Qubit,
@@ -395,14 +393,16 @@ class MatplotlibDrawer:
             clbits_dict,
             glob_data,
         )
-
-        figure_shim = MPLShim(mpl_figure)
         if filename:
-            figure_shim.savefig(filename, dpi=self._style["dpi"], bbox_inches="tight", facecolor=mpl_figure.get_facecolor())
-
+            mpl_figure.savefig(
+                filename,
+                dpi=self._style["dpi"],
+                bbox_inches="tight",
+                facecolor=mpl_figure.get_facecolor(),
+            )
         if not is_user_ax:
             matplotlib_close_if_inline(mpl_figure)
-            return figure_shim
+            return mpl_figure
 
     def _get_layer_widths(self, node_data, wire_map, outer_circuit, glob_data):
         """Compute the layer_widths for the layers"""
